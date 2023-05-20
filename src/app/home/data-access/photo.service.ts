@@ -8,7 +8,8 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Platform } from '@ionic/angular';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, take, tap } from 'rxjs';
+import { StorageService } from 'src/app/shared/data-access/storage.service';
 import { Photo } from 'src/app/shared/interfaces/photo';
 
 @Injectable({
@@ -16,9 +17,20 @@ import { Photo } from 'src/app/shared/interfaces/photo';
 })
 export class PhotoService {
   #photos$ = new BehaviorSubject<Photo[]>([]);
-  photos$ = this.#photos$.asObservable();
+  photos$ = this.#photos$.pipe(
+    tap((photos) => this.storageService.save(photos))
+  );
 
-  constructor(private platform: Platform) {}
+  constructor(
+    private platform: Platform,
+    private storageService: StorageService
+  ) {}
+
+  load() {
+    this.storageService.load$.pipe(take(1)).subscribe((photos) => {
+      this.#photos$.next(photos);
+    });
+  }
 
   async takePhoto() {
     const options: ImageOptions = {
