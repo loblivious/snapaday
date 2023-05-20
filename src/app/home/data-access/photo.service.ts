@@ -5,6 +5,8 @@ import {
   CameraSource,
   ImageOptions,
 } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Platform } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
 import { Photo } from 'src/app/shared/interfaces/photo';
@@ -31,11 +33,23 @@ export class PhotoService {
 
     try {
       const photo = await Camera.getPhoto(options);
+      const uniqueName = Date.now().toString();
 
-      if (photo.path) {
-        this.addPhoto(Date.now().toString(), photo.path);
+      if (this.platform.is('capacitor') && photo.path) {
+        const photoOnFileSystem = await Filesystem.readFile({
+          path: photo.path,
+        });
+
+        const fileName = `${uniqueName}.jpeg`;
+        const permanentFile = await Filesystem.writeFile({
+          data: photoOnFileSystem.data,
+          path: fileName,
+          directory: Directory.Data,
+        });
+
+        this.addPhoto(fileName, Capacitor.convertFileSrc(permanentFile.uri));
       } else if (photo.dataUrl) {
-        this.addPhoto(Date.now().toString(), photo.dataUrl);
+        this.addPhoto(uniqueName, photo.dataUrl);
       }
     } catch (err) {
       console.log(err);
