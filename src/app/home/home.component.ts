@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
-import { PhotoService } from './data-access/photo.service';
 import { DomSanitizer } from '@angular/platform-browser';
-import { combineLatest, map } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { IonRouterOutlet, IonicModule } from '@ionic/angular';
+import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import { PhotoService } from './data-access/photo.service';
 import { PhotoListComponentModule } from './ui/photo-list/photo-list.component';
+import { SlideshowComponentModule } from '../slideshow/slideshow.component';
 
 @Component({
   selector: 'app-home',
@@ -21,14 +22,25 @@ import { PhotoListComponentModule } from './ui/photo-list/photo-list.component';
             >
               <ion-icon name="camera-outline" slot="icon-only"></ion-icon>
             </ion-button>
+            <ion-button (click)="modalIsOpen$.next(true)">
+              <ion-icon name="play" slot="icon-only"></ion-icon>
+            </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
+
       <ion-content>
-        <app-photo-list
-          *ngIf="photos$ | async as photos"
-          [photos]="photos"
-        ></app-photo-list>
+        <app-photo-list [photos]="vm.photos"></app-photo-list>
+        <ion-modal
+          [isOpen]="vm.modalIsOpen"
+          [canDismiss]="true"
+          [presentingElement]="routerOutlet.nativeEl"
+          (ionModalDidDismiss)="modalIsOpen$.next(false)"
+        >
+          <ng-template>
+            <app-slideshow [photos]="vm.photos"></app-slideshow>
+          </ng-template>
+        </ion-modal>
       </ion-content>
     </ng-container>
   `,
@@ -46,19 +58,24 @@ export class HomeComponent {
     )
   );
 
+  modalIsOpen$ = new BehaviorSubject<boolean>(false);
+
   vm$ = combineLatest([
     this.photos$,
+    this.modalIsOpen$,
     this.photoService.hasTakenPhotoToday$,
   ]).pipe(
-    map(([photos, hasTakenPhotoToday]) => ({
+    map(([photos, modalIsOpen, hasTakenPhotoToday]) => ({
       photos,
+      modalIsOpen,
       hasTakenPhotoToday,
     }))
   );
 
   constructor(
-    public photoService: PhotoService,
-    private sanitizer: DomSanitizer
+    protected photoService: PhotoService,
+    private sanitizer: DomSanitizer,
+    public routerOutlet: IonRouterOutlet
   ) {}
 }
 
@@ -68,6 +85,7 @@ export class HomeComponent {
     CommonModule,
     IonicModule,
     PhotoListComponentModule,
+    SlideshowComponentModule,
     RouterModule.forChild([
       {
         path: '',

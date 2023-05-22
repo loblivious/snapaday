@@ -1,6 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
-import { Observable, from, map, shareReplay, switchMap, take, tap } from 'rxjs';
+import {
+  Observable,
+  from,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { Photo } from '../interfaces/photo';
 
 @Injectable({
@@ -16,6 +25,8 @@ export class StorageService {
     tap(() => (this.#hasLoaded = true)),
     shareReplay(1)
   );
+
+  f = of([1, 2, 3, 4]);
 
   constructor(private ionicStorage: Storage) {}
 

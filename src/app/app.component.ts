@@ -55,13 +55,6 @@ export class AppComponent implements OnInit {
             import('./home/home.component').then((m) => m.HomeComponentModule),
         },
         {
-          path: 'slideshow',
-          loadChildren: () =>
-            import('./slideshow/slideshow.component').then(
-              (m) => m.SlideshowComponentModule
-            ),
-        },
-        {
           path: '',
           redirectTo: 'home',
           pathMatch: 'full',
