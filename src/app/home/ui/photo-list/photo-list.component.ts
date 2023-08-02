@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { Photo } from 'src/app/shared/interfaces/photo';
+import { DaysAgoPipeModule } from '../days-ago/days-ago.pipe';
 
 @Component({
   selector: 'app-photo-list',
@@ -15,7 +16,7 @@ import { Photo } from 'src/app/shared/interfaces/photo';
       <ion-item *ngFor="let photo of photos; trackBy: trackByFn">
         <img [src]="photo.safeResourceUrl" />
         <ion-badge slot="end" color="light">
-          {{ photo.dateTaken }}
+          {{ photo.dateTaken | daysAgo }}
         </ion-badge>
       </ion-item>
     </ion-list>
@@ -32,7 +33,7 @@ export class PhotoListComponent {
 
 @NgModule({
   declarations: [PhotoListComponent],
-  imports: [IonicModule, CommonModule],
+  imports: [IonicModule, CommonModule, DaysAgoPipeModule],
   exports: [PhotoListComponent],
 })
 export class PhotoListComponentModule {}
