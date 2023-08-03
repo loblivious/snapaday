@@ -1,4 +1,4 @@
-import { IonicModule } from '@ionic/angular';
+import { IonRouterOutlet, IonicModule } from '@ionic/angular';
 import { ChangeDetectionStrategy, Component, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -24,7 +24,7 @@ import { SlideshowComponentModule } from '../slideshow/slideshow.component';
             </ion-button>
             <ion-button
               (click)="modalIsOpen$.next(true)"
-              [disabled]="vm.modalIsOpen"
+              [disabled]="vm.modalIsOpen || vm.photos.length === 0"
             >
               <ion-icon name="play" slot="icon-only"></ion-icon>
             </ion-button>
@@ -32,10 +32,14 @@ import { SlideshowComponentModule } from '../slideshow/slideshow.component';
         </ion-toolbar>
       </ion-header>
       <ion-content>
-        <app-photo-list [photos]="vm.photos"></app-photo-list>
+        <app-photo-list
+          [photos]="vm.photos"
+          (delete)="photoService.deletePhoto($event)"
+        ></app-photo-list>
         <ion-modal
           [isOpen]="vm.modalIsOpen"
           [canDismiss]="true"
+          [presentingElement]="routerOutlet.nativeEl"
           (ionModalDidDismiss)="modalIsOpen$.next(false)"
         >
           <ng-template>
@@ -75,7 +79,8 @@ export class HomeComponent {
 
   constructor(
     protected photoService: PhotoService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    protected routerOutlet: IonRouterOutlet
   ) {}
 }
 
